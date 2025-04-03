@@ -6,9 +6,18 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
-  modules: ['@nuxthub/core'],
+  modules: ['@nuxthub/core', 'nuxt-auth-utils'],
 
   hub: {
     database: true,
+  },
+
+  runtimeConfig: {
+    oauth: {
+      google: {
+        clientId: import.meta.env.NUXT_OAUTH_GOOGLE_CLIENT_ID,
+        clientSecret: import.meta.env.NUXT_OAUTH_GOOGLE_CLIENT_SECRET,
+      },
+    },
   },
 });
