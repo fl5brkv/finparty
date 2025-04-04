@@ -1,8 +1,8 @@
 <template>
-  <button @click="openInPopup('/auth/google')">sign in with google</button>
-  <button @click="openInPopup('/auth/github')">sign in with github</button>
+  <NuxtLink to="/auth/google" external>sign in with google</NuxtLink>
+  <NuxtLink to="/auth/github" external>sign in with github</NuxtLink>
 </template>
 
 <script setup lang="ts">
-const {openInPopup} = useUserSession();
+
 </script>
