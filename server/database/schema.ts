@@ -1,6 +1,7 @@
 import {sqliteTable, text, integer} from 'drizzle-orm/sqlite-core';
 import {sql} from 'drizzle-orm';
 import {createInsertSchema, createSelectSchema} from 'drizzle-zod';
+import {z} from 'zod';
 
 export const users = sqliteTable('users', {
   userId: integer('user_id').primaryKey({autoIncrement: true}),
@@ -73,4 +74,25 @@ export const transactions = sqliteTable('transactions', {
   createdAt: integer('created_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
     .notNull(),
+});
+
+export const transactionInsertSchema = createInsertSchema(transactions)
+  .omit({
+    transactionId: true,
+    clientId: true,
+    updatedAt: true,
+    createdAt: true,
+  })
+  .extend({
+    clientId: z.number(),
+  });
+
+export const transactionUpdateSchema = createSelectSchema(transactions).omit({
+  clientId: true,
+  updatedAt: true,
+  createdAt: true,
+});
+
+export const transactionDeleteSchema = createSelectSchema(transactions).pick({
+  transactionId: true,
 });

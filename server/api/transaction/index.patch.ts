@@ -1,8 +1,8 @@
-import {transactionInsertSchema} from '~~/server/database/schema';
+import {transactionUpdateSchema} from '~~/server/database/schema';
 
 export default eventHandler(async (event) => {
   const result = await readValidatedBody(event, (body) =>
-    transactionInsertSchema.safeParse(body)
+    transactionUpdateSchema.safeParse(body)
   );
 
   if (!result.success)
@@ -13,13 +13,12 @@ export default eventHandler(async (event) => {
 
   await requireUserSession(event);
 
-  const inserted = await useDrizzle()
-    .insert(tables.transactions)
-    .values(result.data)
-    .returning({transactionId: tables.transactions.transactionId})
-    .get();
+  const updated = await useDrizzle()
+    .update(tables.transactions)
+    .set(result.data)
+    .where(eq(tables.transactions.transactionId, result.data.transactionId));
 
-  if (!inserted)
+  if (!updated)
     throw createError({
       statusMessage: 'The data is invalid.',
       data: {message: 'The data is invalid.'},
