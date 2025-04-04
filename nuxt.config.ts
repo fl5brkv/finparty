@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: {enabled: false},
+  devtools: {enabled: true},
 
   future: {
     compatibilityVersion: 4,
@@ -27,5 +27,11 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': {redirect: '/dashboard'},
+  },
+
+  nitro: {
+    experimental: {
+      tasks: true, // to make the database seed work
+    },
   },
 });
