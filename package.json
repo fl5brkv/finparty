@@ -14,10 +14,12 @@
   "dependencies": {
     "@nuxthub/core": "0.8.23",
     "drizzle-orm": "^0.41.0",
+    "drizzle-zod": "0.5.1",
     "nuxt": "^3.16.2",
     "nuxt-auth-utils": "0.5.18",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "drizzle-kit": "^0.30.6",

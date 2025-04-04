@@ -1,5 +1,6 @@
 import {sqliteTable, text, integer} from 'drizzle-orm/sqlite-core';
 import {sql} from 'drizzle-orm';
+import {createInsertSchema, createSelectSchema} from 'drizzle-zod';
 
 export const users = sqliteTable('users', {
   userId: integer('user_id').primaryKey({autoIncrement: true}),
@@ -33,6 +34,23 @@ export const clients = sqliteTable('clients', {
   createdAt: integer('created_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
     .notNull(),
+});
+
+export const clientInsertSchema = createInsertSchema(clients).omit({
+  clientId: true,
+  userId: true,
+  updatedAt: true,
+  createdAt: true,
+});
+
+export const clientUpdateSchema = createSelectSchema(clients).omit({
+  userId: true,
+  updatedAt: true,
+  createdAt: true,
+});
+
+export const clientDeleteSchema = createSelectSchema(clients).pick({
+  clientId: true,
 });
 
 export const transactions = sqliteTable('transactions', {
