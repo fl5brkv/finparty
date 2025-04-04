@@ -26,7 +26,6 @@ export const clients = sqliteTable('clients', {
   email: text('email'),
   phone: text('phone'),
   address: text('address'),
-  dateOfBirth: integer('date_of_birth', {mode: 'timestamp'}),
   updatedAt: integer('updated_at', {mode: 'timestamp'})
     .default(sql`(unixepoch())`)
     .$onUpdate(() => sql`(unixepoch())`)
@@ -36,16 +35,19 @@ export const clients = sqliteTable('clients', {
     .notNull(),
 });
 
-export const finfetties = sqliteTable('finfetties', {
-  finfettiId: integer('finfetti_id').primaryKey({autoIncrement: true}),
+export const transactions = sqliteTable('transactions', {
+  transactionId: integer('transaction_id').primaryKey({autoIncrement: true}),
   clientId: integer('client_id')
     .references(() => clients.clientId, {onDelete: 'cascade'})
     .notNull(),
-  amount: integer('amount').notNull(),
-  type: text('type', {
-    enum: ['deposit', 'withdrawal'],
+  item: text('item', {
+    enum: ['balloon', 'popper', 'confetti', 'present', 'sparkler'], 
   }).notNull(),
-  description: text('description'),
+  quantity: integer('quantity').notNull(),
+  price: integer('price').notNull(),
+  type: text('type', {
+    enum: ['loan', 'purchase'],
+  }).notNull(),
   updatedAt: integer('updated_at', {mode: 'timestamp'})
     .default(sql`(unixepoch())`)
     .$onUpdate(() => sql`(unixepoch())`)
