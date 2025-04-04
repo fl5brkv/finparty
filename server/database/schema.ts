@@ -7,11 +7,11 @@ export const users = sqliteTable('users', {
   name: text('name').notNull(),
   // provider: text('provider').notNull(),
   // providerUserId: text('provider_user_id').notNull(),
-  updatedAt: integer('updated_at', {mode: 'timestamp'})
+  updatedAt: integer('updated_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
     .$onUpdate(() => sql`(unixepoch())`)
     .notNull(),
-  createdAt: integer('created_at', {mode: 'timestamp'})
+  createdAt: integer('created_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
     .notNull(),
 });
@@ -26,11 +26,11 @@ export const clients = sqliteTable('clients', {
   email: text('email'),
   phone: text('phone'),
   address: text('address'),
-  updatedAt: integer('updated_at', {mode: 'timestamp'})
+  updatedAt: integer('updated_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
     .$onUpdate(() => sql`(unixepoch())`)
     .notNull(),
-  createdAt: integer('created_at', {mode: 'timestamp'})
+  createdAt: integer('created_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
     .notNull(),
 });
@@ -41,18 +41,18 @@ export const transactions = sqliteTable('transactions', {
     .references(() => clients.clientId, {onDelete: 'cascade'})
     .notNull(),
   item: text('item', {
-    enum: ['balloon', 'popper', 'confetti', 'present', 'sparkler'], 
+    enum: ['balloon', 'popper', 'confetti', 'present', 'sparkler'],
   }).notNull(),
   quantity: integer('quantity').notNull(),
   price: integer('price').notNull(),
   type: text('type', {
     enum: ['loan', 'purchase'],
   }).notNull(),
-  updatedAt: integer('updated_at', {mode: 'timestamp'})
+  updatedAt: integer('updated_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
     .$onUpdate(() => sql`(unixepoch())`)
     .notNull(),
-  createdAt: integer('created_at', {mode: 'timestamp'})
+  createdAt: integer('created_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
     .notNull(),
 });

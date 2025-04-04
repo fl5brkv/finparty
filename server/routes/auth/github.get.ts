@@ -6,10 +6,15 @@ export default defineOAuthGitHubEventHandler({
     const inserted = await useDrizzle()
       .insert(tables.users)
       .values({
-        name: user.name || user.login,
+        name: user.name || user.login, // Use 'user.name' if available, otherwise fallback to 'user.login'
         email: user.email,
       })
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: tables.users.email, // Target the 'email' column for conflict check
+        set: {
+          name: user.name || user.login, // Update the 'name' field if there's a conflict
+        },
+      })
       .returning({
         userId: tables.users.userId,
         email: tables.users.email,
@@ -17,12 +22,15 @@ export default defineOAuthGitHubEventHandler({
       })
       .get();
 
-    if (!inserted)
+    // Ensure user was inserted or updated successfully
+    if (!inserted || !inserted.userId) {
       throw createError({
-        statusMessage: 'The email is invalid or already taken',
-        data: {message: 'The email is invalid or already taken'},
+        statusMessage: 'There was an error on the server',
+        data: {message: 'There was an error on the server'},
       });
+    }
 
+    // Update the session with the user details
     await replaceUserSession(event, {
       user: {
         userId: inserted.userId,
@@ -31,7 +39,8 @@ export default defineOAuthGitHubEventHandler({
       },
     });
 
-    return sendRedirect(event, '/dashboard');
+    // Redirect to the dashboard
+    // return sendRedirect(event, '/dashboard');
   },
 
   onError(event, error) {

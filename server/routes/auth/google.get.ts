@@ -6,7 +6,12 @@ export default defineOAuthGoogleEventHandler({
         name: user.name,
         email: user.email,
       })
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: tables.users.email,
+        set: {
+          name: user.name,
+        },
+      })
       .returning({
         userId: tables.users.userId,
         email: tables.users.email,
@@ -16,8 +21,8 @@ export default defineOAuthGoogleEventHandler({
 
     if (!inserted)
       throw createError({
-        statusMessage: 'The email is invalid or already taken',
-        data: {message: 'The email is invalid or already taken'},
+        statusMessage: 'There was an error on server',
+        data: {message: 'There was an error on server'},
       });
 
     await replaceUserSession(event, {
