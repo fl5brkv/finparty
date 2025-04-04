@@ -11,9 +11,11 @@ export default eventHandler(async (event) => {
       data: {message: 'The provided data is invalid'},
     });
 
-  const {
-    user: {userId},
-  } = await requireUserSession(event);
+  // const {
+  //   user: {userId},
+  // } = await requireUserSession(event);
+
+  const userId = 1
 
   const inserted = await useDrizzle()
     .insert(tables.clients)

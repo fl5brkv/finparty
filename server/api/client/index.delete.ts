@@ -11,7 +11,7 @@ export default eventHandler(async (event) => {
       data: {message: 'The provided data is invalid'},
     });
 
-  await requireUserSession(event);
+  // await requireUserSession(event);
 
   const deleted = await useDrizzle()
     .delete(tables.clients)
