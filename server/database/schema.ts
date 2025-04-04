@@ -3,10 +3,10 @@ import {sql} from 'drizzle-orm';
 
 export const users = sqliteTable('users', {
   userId: integer('user_id').primaryKey({autoIncrement: true}),
+  email: text('email').unique(),
   name: text('name').notNull(),
-  email: text('email').notNull().unique(),
-  provider: text('provider').notNull(),
-  providerUserId: text('provider_user_id').notNull(),
+  // provider: text('provider').notNull(),
+  // providerUserId: text('provider_user_id').notNull(),
   updatedAt: integer('updated_at', {mode: 'timestamp'})
     .default(sql`(unixepoch())`)
     .$onUpdate(() => sql`(unixepoch())`)

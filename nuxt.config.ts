@@ -24,4 +24,8 @@ export default defineNuxtConfig({
       },
     },
   },
+
+  routeRules: {
+    '/': {redirect: '/dashboard'},
+  },
 });
