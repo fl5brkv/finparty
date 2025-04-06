@@ -7,14 +7,12 @@
       <div
         class="w-80 p-6 bg-white rounded-lg shadow-lg transform transition-all duration-300"
         ref="modal">
-        <slot name="header" />
+        <div class="flex justify-between items-center">
+          <h3><slot name="header" /></h3>
+          <button class="transition" @click="$emit('close')">x</button>
+        </div>
 
         <slot name="body" />
-
-        <slot name="footer">
-          default footer
-          <button class="transition" @click="$emit('close')">OK</button>
-        </slot>
       </div>
     </div>
   </Transition>
