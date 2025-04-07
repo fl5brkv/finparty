@@ -1,4 +1,4 @@
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -9,7 +9,9 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
-  modules: ['@nuxthub/core', 'nuxt-auth-utils'],
+  modules: ['@nuxthub/core', 'nuxt-auth-utils', '@nuxt/ui'],
+
+  css: ['~/assets/css/main.css'],
 
   hub: {
     database: true,
@@ -29,18 +31,16 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/': {redirect: '/dashboard'},
-  },
-
-  css: ['~/assets/css/main.css'],
-
-  vite: {
-    plugins: [tailwindcss()],
+    '/': {redirect: '/clients'},
   },
 
   nitro: {
     experimental: {
       tasks: true, // to make the database seed work
     },
+  },
+
+  vite: {
+    plugins: [tailwindcss()],
   },
 });

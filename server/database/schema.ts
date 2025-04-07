@@ -37,6 +37,12 @@ export const clients = sqliteTable('clients', {
     .notNull(),
 });
 
+export const clientSelectSchema = createSelectSchema(clients).omit({
+  userId: true,
+  updatedAt: true,
+  createdAt: true,
+});
+
 export const clientInsertSchema = createInsertSchema(clients).omit({
   clientId: true,
   userId: true,
@@ -76,10 +82,6 @@ export const transactions = sqliteTable('transactions', {
     .notNull(),
 });
 
-export const clientSelectSchema = createSelectSchema(clients).extend({
-  transactions: z.array(createSelectSchema(transactions)).optional(),
-});
-
 export const transactionInsertSchema = createInsertSchema(transactions)
   .omit({
     transactionId: true,
@@ -101,20 +103,20 @@ export const transactionDeleteSchema = createSelectSchema(transactions).pick({
   transactionId: true,
 });
 
-export const clientsRelations = relations(clients, ({one, many}) => ({
-  user: one(users, {
-    // Many clients → one user
-    fields: [clients.userId],
-    references: [users.userId],
-  }),
-  transactions: many(transactions), // One client → many transactions
-}));
+// export const clientsRelations = relations(clients, ({one, many}) => ({
+//   user: one(users, {
+//     // Many clients → one user
+//     fields: [clients.userId],
+//     references: [users.userId],
+//   }),
+//   transactions: many(transactions), // One client → many transactions
+// }));
 
-// Transactions relations
-export const transactionsRelations = relations(transactions, ({one}) => ({
-  client: one(clients, {
-    // Many transactions → one client
-    fields: [transactions.clientId],
-    references: [clients.clientId],
-  }),
-}));
+// // Transactions relations
+// export const transactionsRelations = relations(transactions, ({one}) => ({
+//   client: one(clients, {
+//     // Many transactions → one client
+//     fields: [transactions.clientId],
+//     references: [clients.clientId],
+//   }),
+// }));

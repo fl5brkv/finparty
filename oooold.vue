@@ -7,7 +7,7 @@
 
     <!-- <button @click="editClient(client)">edit</button>
   
-      <button @click="deleteClient({clientId: client.clientId})">delete</button> -->
+      <button @click="deleteClient({clientId: client.clientId})">delete</button>  -->
   </div>
   <!-- 
     {{ error }}

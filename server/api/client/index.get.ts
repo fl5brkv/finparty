@@ -5,21 +5,17 @@ export default eventHandler(async (event) => {
 
   const userId = 1;
 
-  // const selected = await useDrizzle()
-  //   .select()
-  //   .from(tables.clients)
-  //   .where(eq(tables.clients.userId, userId))
-  //   .leftJoin(
-  //     tables.transactions,
-  //     eq(tables.clients.clientId, tables.transactions.transactionId)
-  //   )
-
-  const selected = await useDrizzle().query.clients.findMany({
-    with: {
-      transactions: true,
-    },
-    where: eq(tables.clients.userId, userId),
-  });
+  const selected = await useDrizzle()
+    .select({
+      clientId: tables.clients.clientId,
+      email: tables.clients.email,
+      firstName: tables.clients.firstName,
+      lastName: tables.clients.lastName,
+      phone: tables.clients.phone,
+      address: tables.clients.address,
+    })
+    .from(tables.clients)
+    .where(eq(tables.clients.userId, userId))
   
   return selected;
 });

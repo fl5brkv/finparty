@@ -7,14 +7,13 @@ import type {
 } from '~~/server/database/schema';
 
 export const useClient = async () => {
+  const toast = useToast();
+
   const clients = useState<z.infer<typeof clientSelectSchema>[] | null>(
     'clients',
-    () => [] 
+    () => []
   );
 
-  const res = ref<string | null>(null);
-
-  const error = ref<string | null>(null);
 
   await useFetch('/api/client', {
     onResponse({response}) {
@@ -24,53 +23,81 @@ export const useClient = async () => {
 
   const insertClient = async (values: z.infer<typeof clientInsertSchema>) => {
     try {
-      res.value = await $fetch('/api/client', {
+      await $fetch('/api/client', {
         method: 'POST',
         body: values,
       });
+
+      clients.value = [...clients.value, values];
+
+      toast.add({
+        title: 'Success',
+        description: 'Client successfully added.',
+      });
     } catch (err: any) {
-      error.value =
-        err.data?.message ||
-        err.statusMessage ||
-        'Oops! Something went wrong. Please try again later.';
+      toast.add({
+        title: 'Error',
+        description:
+          err.data?.message ||
+          err.statusMessage ||
+          'Failed to add client. Please try again later.',
+      });
     }
   };
 
   const updateClient = async (values: z.infer<typeof clientUpdateSchema>) => {
     try {
-      res.value = await $fetch('/api/client', {
+      await $fetch('/api/client', {
         method: 'PATCH',
         body: values,
       });
+
       clients.value =
         clients.value?.map((client) =>
           client.clientId === values.clientId ? {...client, ...values} : client
         ) || null;
+
+      toast.add({
+        title: 'Success',
+        description: 'Client successfully updated.',
+      });
     } catch (err: any) {
-      error.value =
-        err.data?.message ||
-        err.statusMessage ||
-        'Oops! Something went wrong. Please try again later.';
+      toast.add({
+        title: 'Error',
+        description:
+          err.data?.message ||
+          err.statusMessage ||
+          'Failed to update client. Please try again later.',
+      });
     }
   };
 
   const deleteClient = async (values: z.infer<typeof clientDeleteSchema>) => {
     try {
-      res.value = await $fetch('/api/client', {
+      await $fetch('/api/client', {
         method: 'DELETE',
-        body: {values},
+        body: values,
       });
+
       clients.value =
         clients.value?.filter(
           (client) => client.clientId !== values.clientId
         ) || null;
+
+      toast.add({
+        title: 'Success',
+        description: 'Client was successfully deleted.',
+      });
     } catch (err: any) {
-      error.value =
-        err.data?.message ||
-        err.statusMessage ||
-        'Oops! Something went wrong. Please try again later.';
+      toast.add({
+        title: 'Error',
+        description:
+          err.data?.message ||
+          err.statusMessage ||
+          'Oops! Something went wrong. Please try again later.',
+      });
     }
   };
 
-  return {res, clients, error, insertClient, updateClient, deleteClient};
+  return {clients, insertClient, updateClient, deleteClient};
 };
