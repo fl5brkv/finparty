@@ -1,9 +1,9 @@
 <template>
-  {{ clients }}
+  <div v-for="client in clients" :key="client.clientId">
+    {{ client }}
+  </div>
 </template>
 
 <script setup lang="ts">
-const {data: clients} = await useAsyncData('clients', () =>
-  $fetch('/api/client')
-);
+const {clients} = await useClient();
 </script>

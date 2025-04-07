@@ -76,6 +76,10 @@ export const transactions = sqliteTable('transactions', {
     .notNull(),
 });
 
+export const clientSelectSchema = createSelectSchema(clients).extend({
+  transactions: z.array(createSelectSchema(transactions)).optional(),
+});
+
 export const transactionInsertSchema = createInsertSchema(transactions)
   .omit({
     transactionId: true,

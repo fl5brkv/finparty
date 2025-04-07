@@ -1,7 +1,13 @@
 <template>
-  <div>{{ clients }}</div>
+  <div v-for="client in clients" :key="client.clientId">
+    <div
+      v-for="transaction in client.transactions"
+      :key="transaction.transactionId">
+      {{ transaction }}
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-const { data: clients } = useNuxtData('clients');
+const {clients} = await useClient();
 </script>
