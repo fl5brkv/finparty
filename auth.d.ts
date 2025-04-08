@@ -2,8 +2,9 @@
 declare module '#auth-utils' {
   interface User {
     userId: number;
-    email?: string | null;
+    email: string;
     name: string;
+    img: string;
   }
 
   interface UserSession {

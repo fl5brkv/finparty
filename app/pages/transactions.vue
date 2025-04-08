@@ -1,28 +1,62 @@
 <template>
-  <TransactionsForm v-model:open="showInsertModal" />
-
   <TransactionsForm
     v-model:open="showUpdateModal"
     :transaction="selectedTransaction"
     :is-update="true" />
 
-  <div class="w-full space-y-4 pb-4">
-    <div class="flex px-4 py-3.5 border-b border-(--ui-border-accented)">
-      <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
+  <div
+    class="h-16 flex items-center justify-between px-5 border-b border-(--ui-border-accented)">
+    <h1 class="font-semibold">Clients</h1>
+    <TransactionsForm v-model:open="showInsertModal" />
+  </div>
+
+  <div class="h-16 flex items-center justify-between px-5">
+    <UInput
+      v-model="globalFilter"
+      placeholder="Filter through all fields..."
+      icon="i-lucide-search" />
+
+    <USelect
+      v-model="statusFilter"
+      :items="[
+        {label: 'All', value: 'all'},
+        {label: 'Purchase', value: 'purchase'},
+        {label: 'Loan', value: 'loan'},
+      ]"
+      :ui="{
+        trailingIcon:
+          'group-data-[state=open]:rotate-180 transition-transform duration-200',
+      }"
+      placeholder="Filter status"
+      class="min-w-28" />
+  </div>
+
+  <UTable
+    ref="table"
+    v-model:pagination="pagination"
+    v-model:global-filter="globalFilter"
+    :data="transactions"
+    :columns="columns"
+    :pagination-options="{
+      getPaginationRowModel: getPaginationRowModel(),
+    }"
+    :loading="status === 'pending'"
+    :ui="{
+      base: 'table-fixed border-separate border-spacing-0 px-5',
+      thead: '[&>tr]:bg-(--ui-bg-elevated)/50 [&>tr]:after:content-none',
+      tbody: '[&>tr]:last:[&>td]:border-b-0',
+      th: 'py-1 first:rounded-l-[calc(var(--ui-radius)*2)] last:rounded-r-[calc(var(--ui-radius)*2)] border-y border-(--ui-border) first:border-l last:border-r',
+      td: 'border-b border-(--ui-border)',
+    }" />
+
+  <div class="flex items-center justify-between gap-3 mt-6">
+    <div class="text-sm text-(--ui-text-muted)">
+      {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
+      {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s)
+      selected.
     </div>
 
-    <UTable
-      ref="table"
-      v-model:pagination="pagination"
-      v-model:global-filter="globalFilter"
-      :data="transactions"
-      :columns="columns"
-      :pagination-options="{
-        getPaginationRowModel: getPaginationRowModel(),
-      }"
-      :loading="status === 'pending'" />
-
-    <div class="flex justify-center border-t border-(--ui-border) pt-4">
+    <div class="flex items-center gap-1.5 px-5">
       <UPagination
         :default-page="
           (table?.tableApi?.getState().pagination.pageIndex || 0) + 1
@@ -143,7 +177,18 @@ const columns: TableColumn<transactionsType>[] = [
   {
     accessorKey: 'type',
     header: 'Type',
-    cell: ({row}: {row: {original: transactionsType}}) => row.original.type,
+    cell: ({row}) => {
+      const color = {
+        purchase: 'success' as const,
+        loan: 'info' as const,
+      }[row.original.type];
+
+      return h(
+        UBadge,
+        {class: 'capitalize', variant: 'subtle', color},
+        () => row.original.type
+      );
+    },
   },
   {
     accessorKey: 'price',
@@ -229,4 +274,22 @@ const pagination = ref({
 });
 
 const globalFilter = ref('');
+
+const statusFilter = ref('all');
+
+watch(
+  () => statusFilter.value,
+  (newVal) => {
+    if (!table?.value?.tableApi) return;
+
+    const statusColumn = table.value.tableApi.getColumn('type');
+    if (!statusColumn) return;
+
+    if (newVal === 'all') {
+      statusColumn.setFilterValue(undefined);
+    } else {
+      statusColumn.setFilterValue(newVal);
+    }
+  }
+);
 </script>

@@ -25,19 +25,21 @@ export default defineOAuthGoogleEventHandler({
         data: {message: 'There was an error on server'},
       });
 
+      console.log(user)
     await replaceUserSession(event, {
       user: {
         userId: inserted.userId,
         email: inserted.email,
         name: inserted.name,
+        img: user.picture,
       },
     });
 
-    return sendRedirect(event, '/dashboard');
+    return sendRedirect(event, '/clients');
   },
 
   onError(event, error) {
     console.warn('Google OAuth error:', error);
-    return sendRedirect(event, '/');
+    return sendRedirect(event, '/clients');
   },
 });

@@ -25,6 +25,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.35",
     "drizzle-kit": "^0.30.6",
     "wrangler": "^4.7.0"
   }

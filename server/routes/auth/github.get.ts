@@ -34,14 +34,15 @@ export default defineOAuthGitHubEventHandler({
         userId: inserted.userId,
         email: inserted.email,
         name: inserted.name,
+        img: user.avatar_url,
       },
     });
 
-    return sendRedirect(event, '/dashboard');
+    return sendRedirect(event, '/clients');
   },
 
   onError(event, error) {
     console.warn('GitHub OAuth error:', error);
-    return sendRedirect(event, '/');
+    return sendRedirect(event, '/clients');
   },
 });
