@@ -1,25 +1,58 @@
 <template>
-  <ClientsInsert />
+  <ClientsForm v-model:open="showInsertModal" />
 
-  <UTable :data="clients || []" :columns="columns" />
+  <ClientsForm
+    v-model:open="showUpdateModal"
+    :client="selectedClient"
+    :is-update="true" />
+  <div class="w-full space-y-4 pb-4">
+    <div class="flex px-4 py-3.5 border-b border-(--ui-border-accented)">
+      <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
+    </div>
+
+    <UTable
+      ref="table"
+      v-model:pagination="pagination"
+      v-model:global-filter="globalFilter"
+      :data="clients || []"
+      :columns="columns"
+      :pagination-options="{
+        getPaginationRowModel: getPaginationRowModel(),
+      }" />
+
+    <div class="flex justify-center border-t border-(--ui-border) pt-4">
+      <UPagination
+        :default-page="
+          (table?.tableApi?.getState().pagination.pageIndex || 0) + 1
+        "
+        :items-per-page="table?.tableApi?.getState().pagination.pageSize"
+        :total="table?.tableApi?.getFilteredRowModel().rows.length"
+        @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)" />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import {h, resolveComponent} from 'vue';
 import type {TableColumn} from '@nuxt/ui';
-import type {Row} from '@tanstack/vue-table';
+import {getPaginationRowModel, type Row} from '@tanstack/vue-table';
 import type {z} from 'zod';
 import type {clientSelectSchema} from '~~/server/database/schema';
 
 const UButton = resolveComponent('UButton');
 const UBadge = resolveComponent('UBadge');
 const UDropdownMenu = resolveComponent('UDropdownMenu');
+const table = useTemplateRef('table');
 
 const toast = useToast();
 
 type clientsType = z.infer<typeof clientSelectSchema>;
 
 const {clients, deleteClient} = await useClient();
+
+const showInsertModal = ref(false);
+const showUpdateModal = ref(false);
+const selectedClient = ref();
 
 const getRowItems = (row: Row<clientsType>) => {
   return [
@@ -42,7 +75,16 @@ const getRowItems = (row: Row<clientsType>) => {
       type: 'separator',
     },
     {
-      label: 'Delete item',
+      label: 'Update client',
+      icon: 'tabler:user',
+      color: 'error',
+      onSelect() {
+        selectedClient.value = row.original;
+        showUpdateModal.value = true;
+      },
+    },
+    {
+      label: 'Delete client',
       icon: 'tabler:trash',
       color: 'error',
       onSelect() {
@@ -55,7 +97,22 @@ const getRowItems = (row: Row<clientsType>) => {
 const columns: TableColumn<clientsType>[] = [
   {
     accessorKey: 'email',
-    header: 'Email',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: 'Email',
+        icon: isSorted
+          ? isSorted === 'asc'
+            ? 'i-lucide-arrow-up-narrow-wide'
+            : 'i-lucide-arrow-down-wide-narrow'
+          : 'i-lucide-arrow-up-down',
+        class: '-mx-2.5',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      })
+    },
     cell: ({row}: {row: {original: clientsType}}) => row.original.email,
   },
   {
@@ -106,4 +163,11 @@ const columns: TableColumn<clientsType>[] = [
     },
   },
 ];
+
+const pagination = ref({
+  pageIndex: 0,
+  pageSize: 5,
+});
+
+const globalFilter = ref('');
 </script>

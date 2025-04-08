@@ -50,7 +50,7 @@ export const clientInsertSchema = createInsertSchema(clients).omit({
   createdAt: true,
 });
 
-export const clientUpdateSchema = createSelectSchema(clients).omit({
+export const clientUpdateSchema = createInsertSchema(clients).omit({
   userId: true,
   updatedAt: true,
   createdAt: true,
@@ -82,19 +82,22 @@ export const transactions = sqliteTable('transactions', {
     .notNull(),
 });
 
-export const transactionInsertSchema = createInsertSchema(transactions)
+export const transactionSelectSchema = createSelectSchema(transactions)
   .omit({
-    transactionId: true,
-    clientId: true,
     updatedAt: true,
     createdAt: true,
   })
   .extend({
-    clientId: z.number(),
+    email: z.string(),
   });
 
-export const transactionUpdateSchema = createSelectSchema(transactions).omit({
-  clientId: true,
+export const transactionInsertSchema = createInsertSchema(transactions).omit({
+  transactionId: true,
+  updatedAt: true,
+  createdAt: true,
+});
+
+export const transactionUpdateSchema = createInsertSchema(transactions).omit({
   updatedAt: true,
   createdAt: true,
 });

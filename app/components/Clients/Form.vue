@@ -1,13 +1,18 @@
 <template>
   <UModal
     v-model:open="open"
-    title="New client"
-    description="Add a new client to the database">
-    <UButton label="New client" icon="tabler:plus" />
+    :title="isUpdate ? 'Update Client' : 'New Client'"
+    :description="
+      isUpdate
+        ? 'Edit client details in the database'
+        : 'Add a new client to the database'
+    "
+    @update:open="emit('update:open', $event)">
+    <UButton v-if="!isUpdate" label="New client" icon="tabler:plus" />
 
     <template #body>
       <UForm
-        :schema="clientInsertSchema"
+        :schema="isUpdate ? clientUpdateSchema : clientInsertSchema"
         :state="state"
         class="space-y-4"
         @submit="onSubmit">
@@ -51,9 +56,9 @@
             label="Cancel"
             color="neutral"
             variant="subtle"
-            @click="open = false" />
+            @click="isUpdate ? emit('update:open', false) : (open = false)" />
           <UButton
-            label="Create"
+            :label="isUpdate ? 'Update' : 'Create'"
             color="primary"
             variant="solid"
             type="submit" />
@@ -66,27 +71,38 @@
 <script setup lang="ts">
 import type {FormSubmitEvent} from '@nuxt/ui';
 import type {z} from 'zod';
-import {clientInsertSchema} from '~~/server/database/schema';
-const {insertClient} = await useClient();
+import {
+  clientUpdateSchema,
+  clientInsertSchema,
+} from '~~/server/database/schema';
 
-type Schema = z.output<typeof clientInsertSchema>;
+const {updateClient, insertClient} = await useClient();
 
-const state = reactive<Partial<Schema>>({
-  firstName: '',
-  lastName: '',
-  email: undefined,
-  phone: undefined,
-  address: undefined,
+type UpdateSchema = z.output<typeof clientUpdateSchema>;
+type InsertSchema = z.output<typeof clientInsertSchema>;
+type Schema = InsertSchema | UpdateSchema;
+
+const emit = defineEmits(['update:open']);
+
+interface Props {
+  open: boolean;
+  client?: Partial<Schema>;
+  isUpdate?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isUpdate: false,
 });
 
-const open = ref(false);
-const toast = useToast();
+const {open, client, isUpdate} = toRefs(props);
+const state = shallowReactive<Partial<Schema>>({});
+
+watchEffect(() => {
+  if (client.value) Object.assign(state, client.value);
+});
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
-  const {firstName, lastName, email, phone, address} = event.data;
-
-  await insertClient({firstName, lastName, email, phone, address});
-
-  open.value = false;
+  await (isUpdate.value ? updateClient(event.data) : insertClient(event.data));
+  emit('update:open', false);
 };
 </script>

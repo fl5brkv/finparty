@@ -14,7 +14,6 @@ export const useClient = async () => {
     () => []
   );
 
-
   await useFetch('/api/client', {
     onResponse({response}) {
       clients.value = response._data;
@@ -51,6 +50,8 @@ export const useClient = async () => {
         method: 'PATCH',
         body: values,
       });
+
+      console.log(values);
 
       clients.value =
         clients.value?.map((client) =>
