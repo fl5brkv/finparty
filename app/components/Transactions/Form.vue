@@ -66,9 +66,13 @@ import {
   transactionUpdateSchema,
   transactionInsertSchema,
 } from '~~/server/database/schema';
+import {clientSelectSchema} from '~~/server/database/schema';
 
-const {clients} = await useClient();
-const {updateTransaction, insertTransaction} = await useTransaction();
+const toast = useToast();
+
+type SelectSchema = z.output<typeof clientSelectSchema>;
+
+const {data: clients} = useNuxtData<SelectSchema[]>('clients');
 
 type UpdateSchema = z.output<typeof transactionUpdateSchema>;
 type InsertSchema = z.output<typeof transactionInsertSchema>;
@@ -113,10 +117,61 @@ const types = ref([
   {label: 'Purchase', value: 'purchase'},
 ]);
 
+let previousTransactions = [];
+
+const {data: transactions} = useNuxtData('transactions');
+
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
-  await (isUpdate.value
-    ? updateTransaction(event.data)
-    : insertTransaction(event.data));
+  previousTransactions = [...(transactions.value || [])];
+
+  const isUpdating = isUpdate.value;
+  const transactionData = event.data;
+
+  if (isUpdating) {
+    transactions.value = (transactions.value || []).map(
+      (transaction: Schema) => {
+        if (
+          'transactionId' in transaction &&
+          'transactionId' in transactionData &&
+          transaction.transactionId === transactionData.transactionId
+        ) {
+          return {...transaction, ...transactionData};
+        }
+        return transaction;
+      }
+    );
+  } else {
+    transactions.value = [...(transactions.value || []), transactionData];
+  }
+
+  try {
+    await $fetch('/api/transaction', {
+      method: isUpdating ? 'PATCH' : 'POST',
+      body: transactionData,
+    });
+
+    toast.add({
+      title: 'Success',
+      description: `Transaction successfully ${
+        isUpdating ? 'updated' : 'added'
+      }.`,
+    });
+
+    refreshNuxtData('transactions');
+  } catch (err: any) {
+    transactions.value = previousTransactions;
+
+    toast.add({
+      title: 'Error',
+      description:
+        err.data?.message ||
+        err.statusMessage ||
+        `Failed to ${
+          isUpdating ? 'update' : 'add'
+        } transaction. Please try again later.`,
+    });
+  }
+
   emit('update:open', false);
 };
 </script>

@@ -6,25 +6,64 @@
     :transaction="selectedTransaction"
     :is-update="true" />
 
-  <UTable :data="transactions || []" :columns="columns" />
+  <div class="w-full space-y-4 pb-4">
+    <div class="flex px-4 py-3.5 border-b border-(--ui-border-accented)">
+      <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
+    </div>
+
+    <UTable
+      ref="table"
+      v-model:pagination="pagination"
+      v-model:global-filter="globalFilter"
+      :data="transactions"
+      :columns="columns"
+      :pagination-options="{
+        getPaginationRowModel: getPaginationRowModel(),
+      }"
+      :loading="status === 'pending'" />
+
+    <div class="flex justify-center border-t border-(--ui-border) pt-4">
+      <UPagination
+        :default-page="
+          (table?.tableApi?.getState().pagination.pageIndex || 0) + 1
+        "
+        :items-per-page="table?.tableApi?.getState().pagination.pageSize"
+        :total="table?.tableApi?.getFilteredRowModel().rows.length"
+        @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)" />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import {h, resolveComponent} from 'vue';
 import type {TableColumn} from '@nuxt/ui';
-import type {Row} from '@tanstack/vue-table';
+import {getPaginationRowModel, type Row} from '@tanstack/vue-table';
 import type {z} from 'zod';
-import type {transactionSelectSchema} from '~~/server/database/schema';
+import type {
+  transactionDeleteSchema,
+  transactionSelectSchema,
+} from '~~/server/database/schema';
 
 const UButton = resolveComponent('UButton');
 const UBadge = resolveComponent('UBadge');
 const UDropdownMenu = resolveComponent('UDropdownMenu');
+const table = useTemplateRef('table');
 
 const toast = useToast();
 
 type transactionsType = z.infer<typeof transactionSelectSchema>;
 
-const {transactions, deleteTransaction} = await useTransaction();
+const {data: transactions, status} = await useFetch('/api/transaction', {
+  key: 'transactions',
+  transform: (data) => {
+    return (
+      data?.map((transaction) => ({
+        ...transaction,
+      })) || []
+    );
+  },
+  lazy: true,
+});
 
 const showInsertModal = ref(false);
 const showUpdateModal = ref(false);
@@ -71,12 +110,6 @@ const getRowItems = (row: Row<transactionsType>) => {
 };
 
 const columns: TableColumn<transactionsType>[] = [
-  {
-    accessorKey: 'transactionId',
-    header: 'Transaction ID',
-    cell: ({row}: {row: {original: transactionsType}}) =>
-      row.original.transactionId,
-  },
   {
     accessorKey: 'email',
     header: ({column}) => {
@@ -160,4 +193,40 @@ const columns: TableColumn<transactionsType>[] = [
     },
   },
 ];
+
+const deleteTransaction = async (
+  values: z.infer<typeof transactionDeleteSchema>
+) => {
+  try {
+    await $fetch('/api/transaction', {
+      method: 'DELETE',
+      body: values,
+    });
+
+    transactions.value =
+      transactions.value?.filter(
+        (transaction) => transaction.transactionId !== values.transactionId
+      ) || [];
+
+    toast.add({
+      title: 'Success',
+      description: 'Transaction was successfully deleted.',
+    });
+  } catch (err: any) {
+    toast.add({
+      title: 'Error',
+      description:
+        err.data?.message ||
+        err.statusMessage ||
+        'Oops! Something went wrong. Please try again later.',
+    });
+  }
+};
+
+const pagination = ref({
+  pageIndex: 0,
+  pageSize: 10,
+});
+
+const globalFilter = ref('');
 </script>

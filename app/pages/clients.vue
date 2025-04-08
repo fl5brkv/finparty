@@ -5,6 +5,7 @@
     v-model:open="showUpdateModal"
     :client="selectedClient"
     :is-update="true" />
+
   <div class="w-full space-y-4 pb-4">
     <div class="flex px-4 py-3.5 border-b border-(--ui-border-accented)">
       <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
@@ -14,11 +15,12 @@
       ref="table"
       v-model:pagination="pagination"
       v-model:global-filter="globalFilter"
-      :data="clients || []"
+      :data="clients"
       :columns="columns"
       :pagination-options="{
         getPaginationRowModel: getPaginationRowModel(),
-      }" />
+      }"
+      :loading="status === 'pending'" />
 
     <div class="flex justify-center border-t border-(--ui-border) pt-4">
       <UPagination
@@ -37,7 +39,10 @@ import {h, resolveComponent} from 'vue';
 import type {TableColumn} from '@nuxt/ui';
 import {getPaginationRowModel, type Row} from '@tanstack/vue-table';
 import type {z} from 'zod';
-import type {clientSelectSchema} from '~~/server/database/schema';
+import type {
+  clientDeleteSchema,
+  clientSelectSchema,
+} from '~~/server/database/schema';
 
 const UButton = resolveComponent('UButton');
 const UBadge = resolveComponent('UBadge');
@@ -48,7 +53,17 @@ const toast = useToast();
 
 type clientsType = z.infer<typeof clientSelectSchema>;
 
-const {clients, deleteClient} = await useClient();
+const {data: clients, status} = await useFetch('/api/client', {
+  key: 'clients',
+  transform: (data) => {
+    return (
+      data?.map((client) => ({
+        ...client,
+      })) || []
+    );
+  },
+  lazy: true,
+});
 
 const showInsertModal = ref(false);
 const showUpdateModal = ref(false);
@@ -97,8 +112,8 @@ const getRowItems = (row: Row<clientsType>) => {
 const columns: TableColumn<clientsType>[] = [
   {
     accessorKey: 'email',
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted()
+    header: ({column}) => {
+      const isSorted = column.getIsSorted();
 
       return h(UButton, {
         color: 'neutral',
@@ -110,8 +125,8 @@ const columns: TableColumn<clientsType>[] = [
             : 'i-lucide-arrow-down-wide-narrow'
           : 'i-lucide-arrow-up-down',
         class: '-mx-2.5',
-        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
-      })
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+      });
     },
     cell: ({row}: {row: {original: clientsType}}) => row.original.email,
   },
@@ -164,9 +179,35 @@ const columns: TableColumn<clientsType>[] = [
   },
 ];
 
+const deleteClient = async (values: z.infer<typeof clientDeleteSchema>) => {
+  try {
+    await $fetch('/api/client', {
+      method: 'DELETE',
+      body: values,
+    });
+
+    clients.value =
+      clients.value?.filter((client) => client.clientId !== values.clientId) ||
+      [];
+
+    toast.add({
+      title: 'Success',
+      description: 'Client was successfully deleted.',
+    });
+  } catch (err: any) {
+    toast.add({
+      title: 'Error',
+      description:
+        err.data?.message ||
+        err.statusMessage ||
+        'Oops! Something went wrong. Please try again later.',
+    });
+  }
+};
+
 const pagination = ref({
   pageIndex: 0,
-  pageSize: 5,
+  pageSize: 10,
 });
 
 const globalFilter = ref('');

@@ -25,7 +25,7 @@ export const clients = sqliteTable('clients', {
     .notNull(),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
-  email: text('email'),
+  email: text('email').notNull(),
   phone: text('phone'),
   address: text('address'),
   updatedAt: integer('updated_at', {mode: 'number'})
@@ -88,7 +88,7 @@ export const transactionSelectSchema = createSelectSchema(transactions)
     createdAt: true,
   })
   .extend({
-    email: z.string(),
+    email: z.string(), 
   });
 
 export const transactionInsertSchema = createInsertSchema(transactions).omit({

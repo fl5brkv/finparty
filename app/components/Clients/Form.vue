@@ -76,11 +76,11 @@ import {
   clientInsertSchema,
 } from '~~/server/database/schema';
 
-const {updateClient, insertClient} = await useClient();
-
 type UpdateSchema = z.output<typeof clientUpdateSchema>;
 type InsertSchema = z.output<typeof clientInsertSchema>;
 type Schema = InsertSchema | UpdateSchema;
+
+const toast = useToast();
 
 const emit = defineEmits(['update:open']);
 
@@ -101,8 +101,57 @@ watchEffect(() => {
   if (client.value) Object.assign(state, client.value);
 });
 
+let previousClients = [];
+
+const {data: clients} = useNuxtData('clients');
+
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
-  await (isUpdate.value ? updateClient(event.data) : insertClient(event.data));
+  previousClients = [...(clients.value || [])];
+
+  const isUpdating = isUpdate.value;
+  const clientData = event.data;
+
+  if (isUpdating) {
+    clients.value = (clients.value || []).map((client: Schema) => {
+      if (
+        'clientId' in client &&
+        'clientId' in clientData &&
+        client.clientId === clientData.clientId
+      ) {
+        return {...client, ...clientData}; 
+      }
+      return client; 
+    });
+  } else {
+    clients.value = [...(clients.value || []), clientData];
+  }
+
+  try {
+    await $fetch('/api/client', {
+      method: isUpdating ? 'PATCH' : 'POST',
+      body: clientData,
+    });
+
+    toast.add({
+      title: 'Success',
+      description: `Client successfully ${isUpdating ? 'updated' : 'added'}.`,
+    });
+
+    refreshNuxtData('clients');
+  } catch (err: any) {
+    clients.value = previousClients;
+
+    toast.add({
+      title: 'Error',
+      description:
+        err.data?.message ||
+        err.statusMessage ||
+        `Failed to ${
+          isUpdating ? 'update' : 'add'
+        } client. Please try again later.`,
+    });
+  }
+
   emit('update:open', false);
 };
 </script>
