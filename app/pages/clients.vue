@@ -35,14 +35,14 @@
       td: 'border-b border-(--ui-border)',
     }" />
 
-  <div class="flex items-center justify-between gap-3 mt-6">
+  <div class="flex items-center justify-between gap-3 mt-6 px-5">
     <div class="text-sm text-(--ui-text-muted)">
       {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
       {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s)
       selected.
     </div>
 
-    <div class="flex items-center gap-1.5 px-5">
+    <div class="flex items-center gap-1.5">
       <UPagination
         :default-page="
           (table?.tableApi?.getState().pagination.pageIndex || 0) + 1
@@ -57,6 +57,7 @@
 <script setup lang="ts">
 import {h, resolveComponent} from 'vue';
 import type {TableColumn} from '@nuxt/ui';
+import {UCheckbox} from '#components';
 import {getPaginationRowModel, type Row} from '@tanstack/vue-table';
 import type {z} from 'zod';
 import type {
@@ -130,6 +131,25 @@ const getRowItems = (row: Row<clientsType>) => {
 };
 
 const columns: TableColumn<clientsType>[] = [
+  {
+    id: 'select',
+    header: ({table}) =>
+      h(UCheckbox, {
+        modelValue: table.getIsSomePageRowsSelected()
+          ? 'indeterminate'
+          : table.getIsAllPageRowsSelected(),
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+          table.toggleAllPageRowsSelected(!!value),
+        ariaLabel: 'Select all',
+      }),
+    cell: ({row}) =>
+      h(UCheckbox, {
+        modelValue: row.getIsSelected(),
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+          row.toggleSelected(!!value),
+        ariaLabel: 'Select row',
+      }),
+  },
   {
     accessorKey: 'email',
     header: ({column}) => {
@@ -231,4 +251,12 @@ const pagination = ref({
 });
 
 const globalFilter = ref('');
+
+const selectedRows = computed(() => {
+  return (
+    table.value?.tableApi
+      ?.getFilteredSelectedRowModel()
+      .rows.map((r) => r.original) || []
+  );
+});
 </script>
