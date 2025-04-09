@@ -87,10 +87,6 @@
       </div>
     </div>
   </div>
-
-  <UTooltip text="description">
-    <UButton icon="lucide:download" variant="subtle" />
-  </UTooltip>
 </template>
 
 <script setup lang="ts">
@@ -151,7 +147,7 @@ const getRowItems = (row: Row<TransactionType>) => {
       label: 'Download data',
       icon: 'lucide:download',
       onSelect() {
-        // generatePDF(row.original);
+        generatePDF(row.original);
       },
     },
     {
@@ -372,10 +368,10 @@ const generatePDF = async (values: TransactionType | TransactionType[]) => {
   let yPosition = height - 50;
 
   // Title
-  page.drawText('Finparty', {
+  page.drawText('Finparty Transaction Statement', {
     x: 50,
     y: yPosition,
-    size: 24,
+    size: 20,
   });
 
   yPosition -= 30;
@@ -383,14 +379,39 @@ const generatePDF = async (values: TransactionType | TransactionType[]) => {
   const isArray = Array.isArray(values);
   const transactions = isArray ? values : [values];
 
-  // Header
-  page.drawText(isArray ? 'Transactions List' : 'Transaction', {
+  // Subheader
+  page.drawText(isArray ? 'Transactions List' : 'Transaction Details', {
     x: 50,
     y: yPosition,
-    size: 18,
+    size: 16,
   });
 
   yPosition -= 30;
+
+  // Draw header row if it's a transaction list
+  if (isArray) {
+    page.drawText('Email', {
+      x: 50,
+      y: yPosition,
+      size: 12,
+    });
+    page.drawText('Product', {
+      x: 200, // Moved more right
+      y: yPosition,
+      size: 12,
+    });
+    page.drawText('Amount', {
+      x: 350, // Moved more right
+      y: yPosition,
+      size: 12,
+    });
+    page.drawText('Status', {
+      x: 500, // Moved even more right
+      y: yPosition,
+      size: 12,
+    });
+    yPosition -= 20; // space for header
+  }
 
   // Transactions data
   transactions.forEach((transaction, index) => {
@@ -400,16 +421,50 @@ const generatePDF = async (values: TransactionType | TransactionType[]) => {
 
     // Adjust numbering for single transaction case
     const transactionNumber = isArray ? `${index + 1}. ` : '';
-    const transactionInfo = `${transactionNumber}${transaction.email} ${transaction.product} - ${transaction.amount} - ${transaction.status}`;
+    const transactionInfo = `${transactionNumber}${transaction.email} - ${
+      transaction.product
+    } - ${transaction.amount.toString()} - ${transaction.status}`;
 
-    page.drawText(transactionInfo, {
-      x: 50,
-      y: yPosition,
-      size: 10,
-      color: rgb(0, 0, 0),
-    });
+    if (isArray) {
+      // If it's a transaction list, draw each item in columns
+      page.drawText(transaction.email, {
+        x: 50,
+        y: yPosition,
+        size: 10,
+      });
+      page.drawText(transaction.product, {
+        x: 200, // Moved more right
+        y: yPosition,
+        size: 10,
+      });
+      page.drawText(transaction.amount.toString(), {
+        // Convert to string
+        x: 350, // Moved more right
+        y: yPosition,
+        size: 10,
+      });
+      page.drawText(transaction.status, {
+        x: 500, // Moved even more right
+        y: yPosition,
+        size: 10,
+      });
+    } else {
+      page.drawText(transactionInfo, {
+        x: 50,
+        y: yPosition,
+        size: 12,
+      });
+    }
 
     yPosition -= 15;
+  });
+
+  // Add footer with page number
+  page.drawText(`Page ${pdfDoc.getPageCount()}`, {
+    x: 500,
+    y: 30,
+    size: 10,
+    color: rgb(0.5, 0.5, 0.5),
   });
 
   // Save and download PDF
@@ -417,7 +472,7 @@ const generatePDF = async (values: TransactionType | TransactionType[]) => {
   const blob = new Blob([pdfBytes], {type: 'application/pdf'});
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = isArray ? 'transactions_list.pdf' : 'transaction.pdf';
+  link.download = isArray ? 'transactions_list.pdf' : 'transaction_details.pdf';
   link.click();
 };
 </script>

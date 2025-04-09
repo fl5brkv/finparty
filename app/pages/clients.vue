@@ -87,7 +87,6 @@ import type {
 import {PDFDocument, rgb} from 'pdf-lib';
 
 const UButton = resolveComponent('UButton');
-const UBadge = resolveComponent('UBadge');
 const UDropdownMenu = resolveComponent('UDropdownMenu');
 const table = useTemplateRef('table');
 
@@ -290,17 +289,13 @@ const generatePDF = async (values: ClientType | ClientType[]) => {
   let yPosition = height - 50;
 
   // Title
-  page.drawText('Finparty Financial Statement', {
+  page.drawText('Finparty ClientStatement', {
     x: 50,
     y: yPosition,
     size: 20,
   });
 
   yPosition -= 30;
-
-  // const logoImage = await pdfDoc.embedPng(logoBytes);
-  // page.drawImage(logoImage, { x: 500, y: yPosition, width: 80, height: 80 });
-  // yPosition -= 90;
 
   // Subheader
   const isArray = Array.isArray(values);

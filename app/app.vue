@@ -9,7 +9,7 @@
 
       <aside
         class="fixed md:static flex flex-col h-screen bg-[var(--ui-bg)] py-4 px-3 border-r border-[var(--ui-border)] transition-transform ease-in-out duration-300 z-10 max-w-sm w-full md:w-64 md:py-4.5"
-        :class="{'invisible md:visible': !opened, 'visible': opened}">
+        :class="{'invisible md:visible': !opened, visible: opened}">
         <div class="flex items-center gap-0.5 mb-3.5">
           <UButton
             :icon="opened ? 'lucide:x' : 'lucide:menu'"
@@ -148,11 +148,11 @@ const items = computed<DropdownMenuItem[][]>(() => [
   [
     {
       label: 'Appearance',
-      icon: 'tabler:sun-moon',
+      icon: 'i-lucide-sun-moon',
       children: [
         {
           label: 'Light',
-          icon: 'tabler:sun-high',
+          icon: 'i-lucide-sun',
           type: 'checkbox',
           checked: colorMode.value === 'light',
           onSelect(e: Event) {
@@ -163,7 +163,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
         },
         {
           label: 'Dark',
-          icon: 'tabler:moon',
+          icon: 'i-lucide-moon',
           type: 'checkbox',
           checked: colorMode.value === 'dark',
           onUpdateChecked(checked: boolean) {

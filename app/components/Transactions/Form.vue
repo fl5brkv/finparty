@@ -8,7 +8,7 @@
         : 'Add a new transaction to the database'
     "
     @update:open="emit('update:open', $event)">
-    <UButton v-if="!isUpdate" label="New transaction" icon="tabler:plus" />
+    <UButton v-if="!isUpdate" label="New transaction" icon="lucide:plus" />
 
     <template #body>
       <UForm
@@ -24,10 +24,7 @@
         </UFormField>
 
         <UFormField label="Product" name="product">
-          <USelect
-            v-model="state.product"
-            :items="products"
-            class="w-full" />
+          <USelect v-model="state.product" :items="products" class="w-full" />
         </UFormField>
 
         <UFormField label="Price" placeholder="Enter price" name="price">

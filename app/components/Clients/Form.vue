@@ -8,7 +8,7 @@
         : 'Add a new client to the database'
     "
     @update:open="emit('update:open', $event)">
-    <UButton v-if="!isUpdate" label="New client" icon="tabler:plus" />
+    <UButton v-if="!isUpdate" label="New client" icon="lucide:plus" />
 
     <template #body>
       <UForm
@@ -16,10 +16,7 @@
         :state="state"
         class="space-y-4"
         @submit="onSubmit">
-        <UFormField
-          label="Name"
-          placeholder="Enter client's name"
-          name="name">
+        <UFormField label="Name" placeholder="Enter client's name" name="name">
           <UInput v-model="state.name" class="w-full" />
         </UFormField>
 
@@ -111,9 +108,9 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
         'clientId' in clientData &&
         client.clientId === clientData.clientId
       ) {
-        return {...client, ...clientData}; 
+        return {...client, ...clientData};
       }
-      return client; 
+      return client;
     });
   } else {
     clients.value = [...(clients.value || []), clientData];
