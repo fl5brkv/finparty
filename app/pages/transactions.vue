@@ -4,66 +4,86 @@
     :transaction="selectedTransaction"
     :is-update="true" />
 
-  <div
-    class="h-16 flex items-center justify-between px-5 border-b border-(--ui-border-accented)">
-    <h1 class="font-semibold">Clients</h1>
-    <TransactionsForm v-model:open="showInsertModal" />
-  </div>
-
-  <div class="h-16 flex items-center justify-between px-5">
-    <UInput
-      v-model="globalFilter"
-      placeholder="Filter through all fields..."
-      icon="i-lucide-search" />
-
-    <USelect
-      v-model="statusFilter"
-      :items="[
-        {label: 'All', value: 'all'},
-        {label: 'Purchase', value: 'purchase'},
-        {label: 'Loan', value: 'loan'},
-      ]"
-      :ui="{
-        trailingIcon:
-          'group-data-[state=open]:rotate-180 transition-transform duration-200',
-      }"
-      placeholder="Filter status"
-      class="min-w-28" />
-  </div>
-
-  <UTable
-    ref="table"
-    v-model:pagination="pagination"
-    v-model:global-filter="globalFilter"
-    :data="transactions"
-    :columns="columns"
-    :pagination-options="{
-      getPaginationRowModel: getPaginationRowModel(),
-    }"
-    :loading="status === 'pending'"
-    :ui="{
-      base: 'table-fixed border-separate border-spacing-0 px-5',
-      thead: '[&>tr]:bg-(--ui-bg-elevated)/50 [&>tr]:after:content-none',
-      tbody: '[&>tr]:last:[&>td]:border-b-0',
-      th: 'py-1 first:rounded-l-[calc(var(--ui-radius)*2)] last:rounded-r-[calc(var(--ui-radius)*2)] border-y border-(--ui-border) first:border-l last:border-r',
-      td: 'border-b border-(--ui-border)',
-    }" />
-
-  <div class="flex items-center justify-between gap-3 mt-6 px-5">
-    <div class="text-sm text-(--ui-text-muted)">
-      {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
-      {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s)
-      selected.
+  <div class="flex flex-col h-screen">
+    <div
+      class="h-16 flex items-center justify-between px-3 md:px-5 border-b border-(--ui-border-accented)">
+      <div class="flex items-center gap-2">
+        <MyButton />
+        <h1 class="font-semibold">Transactions</h1>
+      </div>
+      <TransactionsForm v-model:open="showInsertModal" />
     </div>
 
-    <div class="flex items-center gap-1.5">
-      <UPagination
-        :default-page="
-          (table?.tableApi?.getState().pagination.pageIndex || 0) + 1
-        "
-        :items-per-page="table?.tableApi?.getState().pagination.pageSize"
-        :total="table?.tableApi?.getFilteredRowModel().rows.length"
-        @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)" />
+    <div class="h-16 flex items-center justify-between px-3 md:px-5">
+      <UInput
+        v-model="globalFilter"
+        placeholder="Filter through all fields..."
+        icon="i-lucide-search" />
+
+      <div class="flex items-center gap-2.5">
+        <UButton
+          v-if="table?.tableApi?.getFilteredSelectedRowModel().rows.length"
+          label="Download"
+          variant="subtle"
+          icon="lucide:download"
+          @click="generatePDF(selectedRows)">
+          <template #trailing>
+            <UKbd>
+              {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length }}
+            </UKbd>
+          </template>
+        </UButton>
+        <USelect
+          v-model="statusFilter"
+          :items="[
+            {label: 'All', value: 'all'},
+            {label: 'Purchase', value: 'purchase'},
+            {label: 'Loan', value: 'loan'},
+          ]"
+          :ui="{
+            trailingIcon:
+              'group-data-[state=open]:rotate-180 transition-transform duration-200',
+          }"
+          placeholder="Filter status"
+          class="min-w-28" />
+      </div>
+    </div>
+
+    <UTable
+      ref="table"
+      v-model:pagination="pagination"
+      v-model:global-filter="globalFilter"
+      :data="transactions"
+      :columns="columns"
+      :pagination-options="{
+        getPaginationRowModel: getPaginationRowModel(),
+      }"
+      :loading="status === 'pending'"
+      :ui="{
+        base: 'table-fixed border-separate border-spacing-0 px-3 md:px-5',
+        thead: '[&>tr]:bg-(--ui-bg-elevated)/50 [&>tr]:after:content-none',
+        tbody: '[&>tr]:last:[&>td]:border-b-0',
+        th: 'py-1 first:rounded-l-[calc(var(--ui-radius)*2)] last:rounded-r-[calc(var(--ui-radius)*2)] border-y border-(--ui-border) first:border-l last:border-r',
+        td: 'border-b border-(--ui-border)',
+      }" />
+
+    <div
+      class="flex items-center justify-between gap-3 px-3 md:px-5 mt-auto mb-4.5">
+      <div class="text-sm text-(--ui-text-muted)">
+        {{ table?.tableApi?.getFilteredSelectedRowModel().rows.length || 0 }} of
+        {{ table?.tableApi?.getFilteredRowModel().rows.length || 0 }} row(s)
+        selected.
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <UPagination
+          :default-page="
+            (table?.tableApi?.getState().pagination.pageIndex || 0) + 1
+          "
+          :items-per-page="table?.tableApi?.getState().pagination.pageSize"
+          :total="table?.tableApi?.getFilteredRowModel().rows.length"
+          @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)" />
+      </div>
     </div>
   </div>
 </template>
@@ -77,7 +97,8 @@ import type {
   transactionDeleteSchema,
   transactionSelectSchema,
 } from '~~/server/database/schema';
-import { UCheckbox } from '#components';
+import {UCheckbox} from '#components';
+import {PDFDocument, rgb} from 'pdf-lib';
 
 const UButton = resolveComponent('UButton');
 const UBadge = resolveComponent('UBadge');
@@ -86,7 +107,7 @@ const table = useTemplateRef('table');
 
 const toast = useToast();
 
-type transactionsType = z.infer<typeof transactionSelectSchema>;
+type TransactionType = z.infer<typeof transactionSelectSchema>;
 
 const {data: transactions, status} = await useFetch('/api/transaction', {
   key: 'transactions',
@@ -104,15 +125,15 @@ const showInsertModal = ref(false);
 const showUpdateModal = ref(false);
 const selectedTransaction = ref();
 
-const getRowItems = (row: Row<transactionsType>) => {
+const getRowItems = (row: Row<TransactionType>) => {
   return [
     {
       type: 'label',
       label: 'Actions',
     },
     {
-      label: 'Copy client email',
-      icon: 'tabler:copy',
+      label: 'Copy email',
+      icon: 'lucide:copy',
       onSelect() {
         navigator.clipboard.writeText(row.original.email);
         toast.add({
@@ -122,12 +143,18 @@ const getRowItems = (row: Row<transactionsType>) => {
       },
     },
     {
+      label: 'Download data',
+      icon: 'lucide:download',
+      onSelect() {
+        // generatePDF(row.original);
+      },
+    },
+    {
       type: 'separator',
     },
     {
       label: 'Update transaction',
-      icon: 'tabler:user',
-      color: 'error',
+      icon: 'lucide:file-pen',
       onSelect() {
         selectedTransaction.value = row.original;
         showUpdateModal.value = true;
@@ -135,7 +162,7 @@ const getRowItems = (row: Row<transactionsType>) => {
     },
     {
       label: 'Delete transaction',
-      icon: 'tabler:trash',
+      icon: 'lucide:trash',
       color: 'error',
       onSelect() {
         deleteTransaction({transactionId: row.original.transactionId});
@@ -144,7 +171,7 @@ const getRowItems = (row: Row<transactionsType>) => {
   ];
 };
 
-const columns: TableColumn<transactionsType>[] = [
+const columns: TableColumn<TransactionType>[] = [
   {
     id: 'select',
     header: ({table}) =>
@@ -182,25 +209,25 @@ const columns: TableColumn<transactionsType>[] = [
         onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
       });
     },
-    cell: ({row}: {row: {original: transactionsType}}) => row.original.email,
+    cell: ({row}: {row: {original: TransactionType}}) => row.original.email,
   },
   {
     accessorKey: 'item',
     header: 'Item',
-    cell: ({row}: {row: {original: transactionsType}}) => row.original.item,
+    cell: ({row}: {row: {original: TransactionType}}) => row.original.item,
   },
   {
     accessorKey: 'quantity',
     header: 'Quantity',
-    cell: ({row}: {row: {original: transactionsType}}) => row.original.quantity,
+    cell: ({row}: {row: {original: TransactionType}}) => row.original.quantity,
   },
   {
     accessorKey: 'type',
     header: 'Type',
     cell: ({row}) => {
       const color = {
-        purchase: 'success' as const,
-        loan: 'info' as const,
+        purchase: 'warning' as const,
+        loan: 'success' as const,
       }[row.original.type];
 
       return h(
@@ -228,7 +255,7 @@ const columns: TableColumn<transactionsType>[] = [
         onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
       });
     },
-    cell: ({row}: {row: {original: transactionsType}}) => row.original.price,
+    cell: ({row}: {row: {original: TransactionType}}) => row.original.price,
   },
   {
     id: 'actions',
@@ -313,11 +340,68 @@ watch(
   }
 );
 
-const selectedRows = computed(() => {
+const selectedRows = computed<TransactionType[]>((): TransactionType[] => {
   return (
     table.value?.tableApi
       ?.getFilteredSelectedRowModel()
       .rows.map((r) => r.original) || []
   );
 });
+
+const generatePDF = async (values: TransactionType | TransactionType[]) => {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+  const {height} = page.getSize();
+
+  let yPosition = height - 50;
+
+  // Title
+  page.drawText('Finparty', {
+    x: 50,
+    y: yPosition,
+    size: 24,
+  });
+
+  yPosition -= 30;
+
+  const isArray = Array.isArray(values);
+  const transactions = isArray ? values : [values];
+
+  // Header
+  page.drawText(isArray ? 'Transactions List' : 'Transaction', {
+    x: 50,
+    y: yPosition,
+    size: 18,
+  });
+
+  yPosition -= 30;
+
+  // Transactions data
+  transactions.forEach((transaction, index) => {
+    if (yPosition < 50) {
+      yPosition = height - 50;
+    }
+
+    // Adjust numbering for single transaction case
+    const transactionNumber = isArray ? `${index + 1}. ` : '';
+    const transactionInfo = `${transactionNumber}${transaction.email} ${transaction.item} - ${transaction.quantity} - ${transaction.type} - ${transaction.price}`;
+
+    page.drawText(transactionInfo, {
+      x: 50,
+      y: yPosition,
+      size: 10,
+      color: rgb(0, 0, 0),
+    });
+
+    yPosition -= 15;
+  });
+
+  // Save and download PDF
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes], {type: 'application/pdf'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = isArray ? 'transactions_list.pdf' : 'transaction.pdf';
+  link.click();
+};
 </script>

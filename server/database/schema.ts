@@ -105,21 +105,3 @@ export const transactionUpdateSchema = createInsertSchema(transactions).omit({
 export const transactionDeleteSchema = createSelectSchema(transactions).pick({
   transactionId: true,
 });
-
-// export const clientsRelations = relations(clients, ({one, many}) => ({
-//   user: one(users, {
-//     // Many clients → one user
-//     fields: [clients.userId],
-//     references: [users.userId],
-//   }),
-//   transactions: many(transactions), // One client → many transactions
-// }));
-
-// // Transactions relations
-// export const transactionsRelations = relations(transactions, ({one}) => ({
-//   client: one(clients, {
-//     // Many transactions → one client
-//     fields: [transactions.clientId],
-//     references: [clients.clientId],
-//   }),
-// }));

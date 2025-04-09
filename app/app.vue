@@ -2,17 +2,36 @@
   <NuxtRouteAnnouncer />
   <UApp>
     <div class="flex">
-      <aside
-        class="w-64 py-3.5 px-3 h-screen flex flex-col border-r border-(--ui-border)">
-        <UButton
-          icon="noto:partying-face"
-          variant="ghost"
-          color="neutral"
-          label="Finparty"
-          class="w-full mb-2.5"
-          to="/clients" />
+      <div
+        v-if="opened"
+        @click="opened = false"
+        class="fixed inset-0 bg-(--ui-bg-elevated)/75 animate-[fade-in_200ms_ease-out] lg:hidden z-5"></div>
 
-        <UNavigationMenu :items="links[0]" orientation="vertical" color="neutral" />
+      <aside
+        class="fixed md:static flex flex-col h-screen bg-[var(--ui-bg)] py-4 px-3 border-r border-[var(--ui-border)] transition-transform ease-in-out duration-300 z-10 max-w-sm w-full md:w-64 md:py-4.5"
+        :class="{'invisible md:visible': !opened, 'visible': opened}">
+        <div class="flex items-center gap-0.5 mb-3.5">
+          <UButton
+            :icon="opened ? 'lucide:x' : 'lucide:menu'"
+            size="md"
+            color="neutral"
+            variant="ghost"
+            @click="opened = !opened"
+            class="md:hidden" />
+
+          <UButton
+            icon="noto:partying-face"
+            variant="ghost"
+            color="neutral"
+            label="Finparty"
+            to="/clients"
+            class="flex-1" />
+        </div>
+
+        <UNavigationMenu
+          :items="links[0]"
+          orientation="vertical"
+          color="neutral" />
 
         <div class="mt-auto">
           <UDropdownMenu
@@ -77,7 +96,10 @@
         </div>
       </aside>
 
-      <div class="flex-1">
+      <!-- This div will adjust based on the opened state -->
+      <div
+        class="flex-1 transition-all duration-300"
+        :class="{'lg:ml-72': opened, 'lg:ml-0': !opened}">
         <NuxtPage />
       </div>
     </div>
@@ -88,6 +110,13 @@
 const {user, clear, loggedIn} = useUserSession();
 
 const toast = useToast();
+
+const opened = ref(false);
+
+provide('opened', {
+  opened,
+  toggle: () => (opened.value = !opened.value),
+});
 
 import type {NavigationMenuItem, DropdownMenuItem} from '@nuxt/ui';
 
@@ -101,7 +130,7 @@ const links = ref<NavigationMenuItem[][]>([
     {
       label: 'Transactions',
       icon: 'lucide:circle-dollar-sign',
-      to: '/transactions'
+      to: '/transactions',
     },
   ],
 ]);
