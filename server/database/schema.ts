@@ -1,5 +1,5 @@
 import {sqliteTable, text, integer} from 'drizzle-orm/sqlite-core';
-import {relations, sql} from 'drizzle-orm';
+import {sql} from 'drizzle-orm';
 import {createInsertSchema, createSelectSchema} from 'drizzle-zod';
 import {z} from 'zod';
 
@@ -62,13 +62,17 @@ export const transactions = sqliteTable('transactions', {
   clientId: integer('client_id')
     .references(() => clients.clientId, {onDelete: 'cascade'})
     .notNull(),
-  item: text('item', {
-    enum: ['balloon', 'popper', 'confetti', 'present'],
+  product: text('product', {
+    enum: [
+      'pinata_insurance',
+      'confetti_investment',
+      'cake_loan',
+      'balloon_bond',
+    ],
   }).notNull(),
-  quantity: integer('quantity').notNull(),
-  price: integer('price').notNull(),
-  type: text('type', {
-    enum: ['loan', 'purchase', 'gift', 'burn', 'airdrop'],
+  amount: integer('amount').notNull(),
+  status: text('status', {
+    enum: ['pending', 'approved', 'completed', 'cancelled'],
   }).notNull(),
   updatedAt: integer('updated_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
@@ -102,3 +106,22 @@ export const transactionUpdateSchema = createInsertSchema(transactions).omit({
 export const transactionDeleteSchema = createSelectSchema(transactions).pick({
   transactionId: true,
 });
+
+// product:
+// Piñata Insurance 🪅
+// Protects against piñata-related accidents, from wild swings to candy chaos!
+
+// Confetti Investment 🎉
+// A volatile investment that can explode with rewards, showering you in profits when the timing’s right!
+
+// Cake Loan 🍰
+// A loan with manageable payments, like enjoying a slice of cake one bite at a time.
+
+// Balloon Bond 🎈
+// A fixed-term investment that rises steadily over time, with a burst of returns when it reaches its peak!
+
+// status
+// Pending – Waiting for approval or action.
+// Approved – Successfully reviewed and confirmed.
+// Completed – Fully processed and finalized.
+// Cancelled – Manually stopped before completion.

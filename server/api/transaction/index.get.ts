@@ -8,11 +8,10 @@ export default eventHandler(async (event) => {
   const selected = await useDrizzle()
     .select({
       transactionId: tables.transactions.transactionId,
-      item: tables.transactions.item,
-      quantity: tables.transactions.quantity,
-      price: tables.transactions.price,
-      type: tables.transactions.type,
       clientId: tables.clients.clientId,
+      product: tables.transactions.product,
+      amount: tables.transactions.amount,
+      status: tables.transactions.status,
       email: tables.clients.email,
     })
     .from(tables.transactions)

@@ -23,23 +23,19 @@
             class="w-full" />
         </UFormField>
 
-        <UFormField label="Item" name="item">
-          <USelect v-model="state.item" :items="items" class="w-full" />
-        </UFormField>
-
-        <UFormField
-          label="Quantity"
-          placeholder="Enter quantity"
-          name="quantity">
-          <UInputNumber v-model="state.quantity" class="w-full" />
+        <UFormField label="Product" name="product">
+          <USelect
+            v-model="state.product"
+            :items="products"
+            class="w-full" />
         </UFormField>
 
         <UFormField label="Price" placeholder="Enter price" name="price">
-          <UInputNumber v-model="state.price" class="w-full" />
+          <UInputNumber v-model="state.amount" class="w-full" />
         </UFormField>
 
-        <UFormField label="Type" name="type">
-          <USelect v-model="state.type" :items="types" class="w-full" />
+        <UFormField label="Type" name="status">
+          <USelect v-model="state.status" :items="statuses" class="w-full" />
         </UFormField>
 
         <div class="flex justify-end gap-2">
@@ -104,19 +100,18 @@ watchEffect(() => {
   if (transaction.value) Object.assign(state, transaction.value);
 });
 
-const items = ref([
-  {label: 'Ballooon', value: 'balloon'},
-  {label: 'Popper', value: 'popper'},
-  {label: 'Confetti', value: 'confetti'},
-  {label: 'Present', value: 'present'},
+const products = ref([
+  {label: 'Piñata Insurance 🪅', value: 'pinata_insurance'},
+  {label: 'Confetti Investment 🎉', value: 'confetti_investment'},
+  {label: 'Cake Loan 🍰', value: 'cake_loan'},
+  {label: 'Balloon Bond 🎈', value: 'balloon_bond'},
 ]);
 
-const types = ref([
-  {label: 'Loan', value: 'loan'},
-  {label: 'Purchase', value: 'purchase'},
-  {label: 'Gift', value: 'gift'},
-  {label: 'Burn', value: 'burn'},
-  {label: 'Airdrop', value: 'airdrop'},
+const statuses = ref([
+  {label: 'Pending', value: 'pending'},
+  {label: 'Approved', value: 'approved'},
+  {label: 'Completed', value: 'completed'},
+  {label: 'Cancelled', value: 'cancelled'},
 ]);
 
 let previousTransactions = [];

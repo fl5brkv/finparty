@@ -284,33 +284,61 @@ const selectedRows = computed<ClientType[]>((): ClientType[] => {
 
 const generatePDF = async (values: ClientType | ClientType[]) => {
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+  const page = pdfDoc.addPage([595.28, 841.89]); // A4 size (210mm x 297mm)
   const {height} = page.getSize();
 
   let yPosition = height - 50;
 
   // Title
-  page.drawText('Finparty', {
+  page.drawText('Finparty Financial Statement', {
     x: 50,
     y: yPosition,
-    size: 24,
+    size: 20,
   });
 
   yPosition -= 30;
 
+  // const logoImage = await pdfDoc.embedPng(logoBytes);
+  // page.drawImage(logoImage, { x: 500, y: yPosition, width: 80, height: 80 });
+  // yPosition -= 90;
+
+  // Subheader
   const isArray = Array.isArray(values);
-  const clients = isArray ? values : [values];
-
-  // Header
-  page.drawText(isArray ? 'Clients List' : 'Client', {
+  page.drawText(isArray ? 'Client List' : 'Client Details', {
     x: 50,
     y: yPosition,
-    size: 18,
+    size: 16,
   });
 
   yPosition -= 30;
+
+  // Draw header row if it's a client list
+  if (isArray) {
+    page.drawText('Name', {
+      x: 50,
+      y: yPosition,
+      size: 12,
+    });
+    page.drawText('Email', {
+      x: 150,
+      y: yPosition,
+      size: 12,
+    });
+    page.drawText('Phone', {
+      x: 300,
+      y: yPosition,
+      size: 12,
+    });
+    page.drawText('Address', {
+      x: 400,
+      y: yPosition,
+      size: 12,
+    });
+    yPosition -= 20; // space for header
+  }
 
   // Clients data
+  const clients = isArray ? values : [values];
   clients.forEach((client, index) => {
     if (yPosition < 50) {
       yPosition = height - 50;
@@ -320,14 +348,45 @@ const generatePDF = async (values: ClientType | ClientType[]) => {
     const clientNumber = isArray ? `${index + 1}. ` : '';
     const clientInfo = `${clientNumber}${client.name} - ${client.email} - ${client.phone} - ${client.address}`;
 
-    page.drawText(clientInfo, {
-      x: 50,
-      y: yPosition,
-      size: 10,
-      color: rgb(0, 0, 0),
-    });
+    if (isArray) {
+      // If its a client list draw each item in columns
+      page.drawText(client.name, {
+        x: 50,
+        y: yPosition,
+        size: 10,
+      });
+      page.drawText(client.email, {
+        x: 150,
+        y: yPosition,
+        size: 10,
+      });
+      page.drawText(client.phone ? client.phone : 'N/A', {
+        x: 300,
+        y: yPosition,
+        size: 10,
+      });
+      page.drawText(client.address ? client.address : 'N/A', {
+        x: 400,
+        y: yPosition,
+        size: 10,
+      });
+    } else {
+      page.drawText(clientInfo, {
+        x: 50,
+        y: yPosition,
+        size: 12,
+      });
+    }
 
     yPosition -= 15;
+  });
+
+  // Add footer with page number
+  page.drawText(`Page ${pdfDoc.getPageCount()}`, {
+    x: 500,
+    y: 30,
+    size: 10,
+    color: rgb(0.5, 0.5, 0.5),
   });
 
   // Save and download PDF
@@ -335,7 +394,7 @@ const generatePDF = async (values: ClientType | ClientType[]) => {
   const blob = new Blob([pdfBytes], {type: 'application/pdf'});
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = isArray ? 'clients_list.pdf' : 'client.pdf';
+  link.download = isArray ? 'clients_list.pdf' : 'client_details.pdf';
   link.click();
 };
 </script>

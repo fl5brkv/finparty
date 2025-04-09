@@ -36,9 +36,10 @@
         <USelect
           v-model="statusFilter"
           :items="[
-            {label: 'All', value: 'all'},
-            {label: 'Purchase', value: 'purchase'},
-            {label: 'Loan', value: 'loan'},
+            {label: 'Pending', value: 'pending'},
+            {label: 'Appproved', value: 'approved'},
+            {label: 'Completed', value: 'completed'},
+            {label: 'Cancelled', value: 'cancelled'},
           ]"
           :ui="{
             trailingIcon:
@@ -86,6 +87,10 @@
       </div>
     </div>
   </div>
+
+  <UTooltip text="description">
+    <UButton icon="lucide:download" variant="subtle" />
+  </UTooltip>
 </template>
 
 <script setup lang="ts">
@@ -97,7 +102,7 @@ import type {
   transactionDeleteSchema,
   transactionSelectSchema,
 } from '~~/server/database/schema';
-import {UCheckbox} from '#components';
+import {UCheckbox, UTooltip} from '#components';
 import {PDFDocument, rgb} from 'pdf-lib';
 
 const UButton = resolveComponent('UButton');
@@ -212,43 +217,22 @@ const columns: TableColumn<TransactionType>[] = [
     cell: ({row}: {row: {original: TransactionType}}) => row.original.email,
   },
   {
-    accessorKey: 'item',
-    header: 'Item',
-    cell: ({row}: {row: {original: TransactionType}}) => row.original.item,
-  },
-  {
-    accessorKey: 'quantity',
-    header: 'Quantity',
-    cell: ({row}: {row: {original: TransactionType}}) => row.original.quantity,
-  },
-  {
-    accessorKey: 'type',
-    header: 'Type',
+    accessorKey: 'product',
+    header: 'Product',
     cell: ({row}) => {
-      const color = {
-        purchase: 'warning' as const,
-        loan: 'neutral' as const,
-        gift: 'warning' as const,
-        burn: 'error' as const,
-        airdrop: 'info' as const,
-      }[row.original.type];
-
-      return h(
-        UBadge,
-        {class: 'capitalize', variant: 'subtle', color},
-        () => row.original.type
-      );
+      const text = row.original.product;
+      return h('span', {}, productNames.value[text]);
     },
   },
   {
-    accessorKey: 'price',
+    accessorKey: 'amount',
     header: ({column}) => {
       const isSorted = column.getIsSorted();
 
       return h(UButton, {
         color: 'neutral',
         variant: 'ghost',
-        label: 'Price',
+        label: 'Amount',
         icon: isSorted
           ? isSorted === 'asc'
             ? 'i-lucide-arrow-up-narrow-wide'
@@ -258,7 +242,27 @@ const columns: TableColumn<TransactionType>[] = [
         onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
       });
     },
-    cell: ({row}: {row: {original: TransactionType}}) => row.original.price,
+    cell: ({row}: {row: {original: TransactionType}}) => {
+      const amount = row.original.amount;
+      return h('span', {}, `${amount} €`); // Append the Euro symbol to the amount
+    },
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({row}) => {
+      const color = {
+        pending: 'info' as const,
+        approved: 'success' as const,
+        completed: 'warning' as const,
+        cancelled: 'error' as const,
+      }[row.original.status];
+      return h(
+        UBadge,
+        {class: 'capitalize', variant: 'subtle', color},
+        () => row.original.status
+      );
+    },
   },
   {
     id: 'actions',
@@ -288,6 +292,15 @@ const columns: TableColumn<TransactionType>[] = [
     },
   },
 ];
+
+const productNames = computed(() => {
+  return {
+    pinata_insurance: 'Piñata Insurance 🪅',
+    confetti_investment: 'Confetti Investment 🎉',
+    cake_loan: 'Cake Loan 🍰',
+    balloon_bond: 'Balloon Bond 🎈',
+  };
+});
 
 const deleteTransaction = async (
   values: z.infer<typeof transactionDeleteSchema>
@@ -332,7 +345,7 @@ watch(
   (newVal) => {
     if (!table?.value?.tableApi) return;
 
-    const statusColumn = table.value.tableApi.getColumn('type');
+    const statusColumn = table.value.tableApi.getColumn('status');
     if (!statusColumn) return;
 
     if (newVal === 'all') {
@@ -387,7 +400,7 @@ const generatePDF = async (values: TransactionType | TransactionType[]) => {
 
     // Adjust numbering for single transaction case
     const transactionNumber = isArray ? `${index + 1}. ` : '';
-    const transactionInfo = `${transactionNumber}${transaction.email} ${transaction.item} - ${transaction.quantity} - ${transaction.type} - ${transaction.price}`;
+    const transactionInfo = `${transactionNumber}${transaction.email} ${transaction.product} - ${transaction.amount} - ${transaction.status}`;
 
     page.drawText(transactionInfo, {
       x: 50,
