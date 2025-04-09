@@ -17,17 +17,10 @@
         class="space-y-4"
         @submit="onSubmit">
         <UFormField
-          label="First Name"
-          placeholder="Enter client's first name"
-          name="firstName">
-          <UInput v-model="state.firstName" class="w-full" />
-        </UFormField>
-
-        <UFormField
-          label="Last Name"
-          placeholder="Enter client's last name"
-          name="lastName">
-          <UInput v-model="state.lastName" class="w-full" />
+          label="Name"
+          placeholder="Enter client's name"
+          name="name">
+          <UInput v-model="state.name" class="w-full" />
         </UFormField>
 
         <UFormField

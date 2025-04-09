@@ -227,7 +227,10 @@ const columns: TableColumn<TransactionType>[] = [
     cell: ({row}) => {
       const color = {
         purchase: 'warning' as const,
-        loan: 'success' as const,
+        loan: 'neutral' as const,
+        gift: 'warning' as const,
+        burn: 'error' as const,
+        airdrop: 'info' as const,
       }[row.original.type];
 
       return h(

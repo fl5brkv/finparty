@@ -198,14 +198,9 @@ const columns: TableColumn<ClientType>[] = [
     cell: ({row}: {row: {original: ClientType}}) => row.original.email,
   },
   {
-    accessorKey: 'firstName',
-    header: 'First Name',
-    cell: ({row}: {row: {original: ClientType}}) => row.original.firstName,
-  },
-  {
-    accessorKey: 'lastName',
-    header: 'Last Name',
-    cell: ({row}: {row: {original: ClientType}}) => row.original.lastName,
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({row}: {row: {original: ClientType}}) => row.original.name,
   },
   {
     accessorKey: 'phone',
@@ -323,7 +318,7 @@ const generatePDF = async (values: ClientType | ClientType[]) => {
 
     // Adjust numbering for single client case
     const clientNumber = isArray ? `${index + 1}. ` : '';
-    const clientInfo = `${clientNumber}${client.firstName} ${client.lastName} - ${client.email} - ${client.phone} - ${client.address}`;
+    const clientInfo = `${clientNumber}${client.name} - ${client.email} - ${client.phone} - ${client.address}`;
 
     page.drawText(clientInfo, {
       x: 50,

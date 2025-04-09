@@ -7,8 +7,6 @@ export const users = sqliteTable('users', {
   userId: integer('user_id').primaryKey({autoIncrement: true}),
   email: text('email').unique(),
   name: text('name').notNull(),
-  // provider: text('provider').notNull(),
-  // providerUserId: text('provider_user_id').notNull(),
   updatedAt: integer('updated_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
     .$onUpdate(() => sql`(unixepoch())`)
@@ -23,9 +21,8 @@ export const clients = sqliteTable('clients', {
   userId: integer('user_id')
     .references(() => users.userId, {onDelete: 'cascade'})
     .notNull(),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
-  email: text('email').notNull(),
+  name: text('name').notNull(),
+  email: text('email').unique().notNull(),
   phone: text('phone'),
   address: text('address'),
   updatedAt: integer('updated_at', {mode: 'number'})
@@ -66,12 +63,12 @@ export const transactions = sqliteTable('transactions', {
     .references(() => clients.clientId, {onDelete: 'cascade'})
     .notNull(),
   item: text('item', {
-    enum: ['balloon', 'popper', 'confetti', 'present', 'sparkler'],
+    enum: ['balloon', 'popper', 'confetti', 'present'],
   }).notNull(),
   quantity: integer('quantity').notNull(),
   price: integer('price').notNull(),
   type: text('type', {
-    enum: ['loan', 'purchase'],
+    enum: ['loan', 'purchase', 'gift', 'burn', 'airdrop'],
   }).notNull(),
   updatedAt: integer('updated_at', {mode: 'number'})
     .default(sql`(unixepoch())`)
@@ -88,7 +85,7 @@ export const transactionSelectSchema = createSelectSchema(transactions)
     createdAt: true,
   })
   .extend({
-    email: z.string(), 
+    email: z.string(),
   });
 
 export const transactionInsertSchema = createInsertSchema(transactions).omit({

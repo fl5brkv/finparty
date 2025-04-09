@@ -80,7 +80,7 @@ type Schema = InsertSchema | UpdateSchema;
 
 const mappedClients = computed(() => {
   return (clients.value || []).map((client) => ({
-    label: `${client.firstName} ${client.lastName}`,
+    label: client.name,
     value: client.clientId,
   }));
 });
@@ -109,12 +109,14 @@ const items = ref([
   {label: 'Popper', value: 'popper'},
   {label: 'Confetti', value: 'confetti'},
   {label: 'Present', value: 'present'},
-  {label: 'Sparkler', value: 'sparkler'},
 ]);
 
 const types = ref([
   {label: 'Loan', value: 'loan'},
   {label: 'Purchase', value: 'purchase'},
+  {label: 'Gift', value: 'gift'},
+  {label: 'Burn', value: 'burn'},
+  {label: 'Airdrop', value: 'airdrop'},
 ]);
 
 let previousTransactions = [];

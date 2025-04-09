@@ -22,29 +22,27 @@ export default defineTask({
     const clients = [
       {
         userId: 1,
-        firstName: 'John',
-        lastName: 'Doe',
+        name: 'John Doe',
         email: 'john.client@example.com',
         phone: '123-456-7890',
         address: '123 Main St',
       },
       {
         userId: 1,
-        firstName: 'Jane',
-        lastName: 'Doe',
+        name: 'Jane Doe',
         email: 'jane.client@example.com',
         phone: '098-765-4321',
         address: '456 Elm St',
       },
       {
         userId: 2,
-        firstName: 'Peter',
-        lastName: 'Doe',
+        name: 'Peter Doe',
         email: 'peter.client@example.com',
         phone: '175-757-4521',
         address: '789 Lawson St',
       },
     ];
+
 
     await useDrizzle().insert(tables.clients).values(clients);
 
@@ -61,7 +59,7 @@ export default defineTask({
         item: 'popper',
         quantity: 10,
         price: 50,
-        type: 'loan',
+        type: 'gift',
       },
       {
         clientId: 1,

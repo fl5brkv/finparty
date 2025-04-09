@@ -9,8 +9,7 @@ export default eventHandler(async (event) => {
     .select({
       clientId: tables.clients.clientId,
       email: tables.clients.email,
-      firstName: tables.clients.firstName,
-      lastName: tables.clients.lastName,
+      name: tables.clients.name,
       phone: tables.clients.phone,
       address: tables.clients.address,
     })
