@@ -1,5 +1,5 @@
 <template>
-  <TransactionsForm
+  <MyTransactionsForm
     v-model:open="showUpdateModal"
     :transaction="selectedTransaction"
     :is-update="true" />
@@ -11,7 +11,9 @@
         <MyButton />
         <h1 class="font-semibold">Transactions</h1>
       </div>
-      <TransactionsForm v-model:open="showInsertModal" />
+
+      <MyTransactionsForm v-if="loggedIn" v-model:open="showInsertModal" />
+      <MyLogin :form-type="'transaction'" v-else />
     </div>
 
     <div class="h-16 flex items-center justify-between px-3 md:px-5">
@@ -105,6 +107,7 @@ const UButton = resolveComponent('UButton');
 const UBadge = resolveComponent('UBadge');
 const UDropdownMenu = resolveComponent('UDropdownMenu');
 const table = useTemplateRef('table');
+const {loggedIn} = useUserSession();
 
 const toast = useToast();
 

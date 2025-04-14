@@ -25,7 +25,6 @@ export default defineOAuthGoogleEventHandler({
         data: {message: 'There was an error on server'},
       });
 
-      console.log(user)
     await replaceUserSession(event, {
       user: {
         userId: inserted.userId,

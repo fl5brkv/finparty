@@ -139,6 +139,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
         `Failed to ${
           isUpdating ? 'update' : 'add'
         } client. Please try again later.`,
+      color: 'error',
     });
   }
 

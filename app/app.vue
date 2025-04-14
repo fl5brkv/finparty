@@ -59,44 +59,11 @@
           </UDropdownMenu>
 
           <div v-else>
-            <UModal
-              title="Log in"
-              description="Please, log in to continue using the website.">
-              <UButton
-                label="Log in"
-                variant="ghost"
-                icon="lucide:key-round"
-                color="neutral"
-                class="w-full" />
-
-              <template #body>
-                <div class="flex flex-col gap-4">
-                  <UButton
-                    to="/auth/google"
-                    external
-                    icon="tabler:brand-google"
-                    size="xl"
-                    color="neutral"
-                    variant="subtle">
-                    Sign in with Google
-                  </UButton>
-                  <UButton
-                    to="/auth/github"
-                    external
-                    icon="tabler:brand-github"
-                    size="xl"
-                    color="neutral"
-                    variant="subtle">
-                    Sign in with GitHub
-                  </UButton>
-                </div>
-              </template>
-            </UModal>
+            <MyLogin />
           </div>
         </div>
       </aside>
 
-      <!-- This div will adjust based on the opened state -->
       <div
         class="flex-1 transition-all duration-300"
         :class="{'lg:ml-72': opened, 'lg:ml-0': !opened}">

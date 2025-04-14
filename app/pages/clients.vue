@@ -1,5 +1,5 @@
 <template>
-  <ClientsForm
+  <MyClientsForm
     v-model:open="showUpdateModal"
     :client="selectedClient"
     :is-update="true" />
@@ -12,7 +12,8 @@
         <h1 class="font-semibold">Clients</h1>
       </div>
 
-      <ClientsForm v-model:open="showInsertModal" />
+      <MyClientsForm v-if="loggedIn" v-model:open="showInsertModal" />
+      <MyLogin :form-type="'client'" v-else />
     </div>
 
     <div class="h-16 flex items-center justify-between px-3 md:px-5">
@@ -89,6 +90,7 @@ import {PDFDocument, rgb} from 'pdf-lib';
 const UButton = resolveComponent('UButton');
 const UDropdownMenu = resolveComponent('UDropdownMenu');
 const table = useTemplateRef('table');
+const {loggedIn} = useUserSession();
 
 const toast = useToast();
 
