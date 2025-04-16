@@ -1,0 +1,20 @@
+{
+  "name": "Finparty longer name",
+  "short_name": "Finparty",
+  "start_url": "/clients",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#bada55",
+  "icons": [
+    {
+      "src": "/img/192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

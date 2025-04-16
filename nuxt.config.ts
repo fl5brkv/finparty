@@ -1,4 +1,4 @@
-import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -42,5 +42,11 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [tailwindcss()],
+  },
+
+  app: {
+    head: {
+      link: [{rel: 'manifest', href: '/manifest.json'}],
+    },
   },
 });
